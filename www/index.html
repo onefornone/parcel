@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parcel</title>
+<style>
+:root{--bg:#f3f2fb;--card:#fff;--ink:#16162a;--mut:#6b6b85;--line:#e1e0f0;--acc:#2447f5;--on:#fff;--ok:#0a8a5b;--warn:#c25a00}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10101c;--card:#1a1a2c;--ink:#f0f0fa;--mut:#9a9ab6;--line:#2b2b44;--acc:#7b93ff;--on:#10101c;--ok:#4fd6a0;--warn:#ffb067}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+main{max-width:720px;margin:0 auto;padding:20px 16px 104px}
+h1{font-size:34px;line-height:1.05;margin:8px 0 6px;font-weight:800;letter-spacing:-.02em}h2{font-size:17px;margin:22px 0 4px}
+.sub{color:var(--mut);margin:0 0 16px}
+.search{width:100%;padding:13px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+button:focus-visible,input:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0 6px;scrollbar-width:none}
+.chip{flex:none;border:1.5px solid var(--line);background:transparent;color:var(--ink);padding:7px 14px;border-radius:99px;font:inherit;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row{display:flex;gap:14px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line)}
+.tile{position:relative;flex:none;width:54px;height:54px;border-radius:16px 16px 16px 4px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:22px;overflow:hidden}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--card)}
+.grow{flex:1;min-width:0}.nm{font-weight:600;font-size:16px}.ds{color:var(--mut);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mt{font-size:12.5px;color:var(--mut);margin-top:2px}.up{color:var(--warn);font-weight:600}.in{color:var(--ok);font-weight:600}
+.get{flex:none;min-width:84px;background:var(--acc);color:var(--on);border:0;padding:9px 16px;border-radius:99px;font:600 14px inherit;font-family:inherit;cursor:pointer}
+.get.alt{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
+.bar{height:4px;border-radius:4px;background:var(--line);margin-top:7px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .12s}
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));background:var(--ink);padding:5px;border-radius:99px;display:flex;gap:2px;z-index:5}
+nav button{border:0;background:transparent;color:var(--bg);padding:10px 22px;border-radius:99px;font:600 14px inherit;font-family:inherit;cursor:pointer;opacity:.7}
+nav button[aria-selected=true]{background:var(--bg);color:var(--ink);opacity:1}
+.badge{background:var(--warn);color:#fff;border-radius:99px;padding:0 7px;margin-left:6px;font-size:12px}
+#sheet{position:fixed;inset:0;background:rgba(10,10,30,.55);display:none;align-items:flex-end;justify-content:center;z-index:9}
+#sheet.on{display:flex}.pane{background:var(--card);width:100%;max-width:720px;max-height:88%;overflow:auto;border-radius:24px 24px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+.var{display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid var(--line)}.var .fn{flex:1;min-width:0;word-break:break-all;font-size:13px}
+.best{color:var(--ok);font-weight:600;font-size:12px}.x{float:right;background:none;border:0;color:var(--mut);font-size:28px;cursor:pointer}
+.banner{display:flex;gap:12px;align-items:center;padding:14px;border:1.5px solid var(--acc);border-radius:16px;background:var(--card);margin:0 0 16px}.banner[hidden]{display:none}
+.empty{color:var(--mut);padding:36px 0;text-align:center}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));max-width:480px;margin:0 auto;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;display:none;z-index:20}
+</style></head><body><main>
+<h1>Parcel</h1><p class="sub" id="sub">Open-source apps, straight from the developers.</p>
+<div class="banner" id="selfup" hidden></div>
+<section id="v-browse"><input id="q" class="search" type="search" placeholder="Search apps" aria-label="Search apps"><div class="chips" id="chips"></div><div id="list"></div></section>
+<section id="v-lib" hidden></section>
+</main>
+<nav role="tablist"><button role="tab" data-t="browse" aria-selected="true">Store</button><button role="tab" data-t="lib" aria-selected="false">Library<span class="badge" id="bd" hidden></span></button></nav>
+<div id="sheet" role="dialog" aria-modal="true"><div class="pane" id="pane"></div></div><div id="toast" role="status"></div>
+<script>
+const P=window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()?(Capacitor.Plugins.Parcel||Capacitor.registerPlugin("Parcel")):null;
+const REPO="__REPO__",BRANCH="__BRANCH__",HAS_REPO=!REPO.startsWith("__");
+const SELF={id:REPO,name:"Parcel",pkg:"com.parcel.store"};let SELFUP=null,SELFVER="";
+let APPS=[],INST={},DL={},cat="All",tabNow="browse",openId=null,busy=null;
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mb=b=>b?(b>=1e6?(b/1e6).toFixed(1)+" MB":Math.round(b/1e3)+" KB"):"";
+const hue=s=>[...s].reduce((a,c)=>a*31+c.charCodeAt(0),7)%360;
+let ABIS=["arm64-v8a","armeabi-v7a"];const TOK={"arm64-v8a":/arm64|aarch64/,"armeabi-v7a":/armeabi|v7a|arm32/,"x86_64":/x86_64|x64/,"x86":/x86(?!_64)/};
+const score=n=>{n=n.toLowerCase();const pen=/fdroid/.test(n)?.5:0;let hit=null;for(const k in TOK)if(TOK[k].test(n)){hit=k;break}
+ if(!hit)return 4-pen;const i=ABIS.indexOf(hit);return (i<0?-5:10-i*2)-pen};
+const best=a=>[...a.apks].sort((x,y)=>score(y.n)-score(x.n))[0];
+const nums=s=>(String(s).match(/\d+/g)||[]).map(Number);
+const cmp=(a,b)=>{for(let i=0;i<Math.max(a.length,b.length);i++){const d=(a[i]||0)-(b[i]||0);if(d)return d}return 0};
+const inst=a=>a.pkg&&INST[a.pkg],upd=a=>{const i=inst(a);return !!(i&&i.version&&cmp(nums(a.tag),nums(i.version))>0)};
+let tt;const toast=m=>{const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(tt);tt=setTimeout(()=>t.style.display="none",3800)};
+const tile=a=>`<div class="tile" style="background:hsl(${hue(a.name)} 55% 42%)">${esc(a.name[0])}<img alt="" loading="lazy" src="${inst(a)&&inst(a).icon||`https://github.com/${a.id.split("/")[0]}.png?size=96`}" onerror="this.remove()"></div>`;
+function btn(a,v){const d=DL[a.id],id=esc(a.id);
+ if(d&&d.st=="dl")return `<button class="get alt" data-act="cancel">${d.p>0?Math.round(d.p*100)+"%":"…"} ✕</button>`;
+ if(d&&d.st=="ready")return `<button class="get" data-act="install" data-id="${id}">Install</button>`;
+ if(inst(a))return upd(a)?`<button class="get" data-act="get" data-id="${id}" ${v?`data-v="${esc(v.n)}"`:""}>Update</button>`:`<button class="get alt" data-act="open" data-id="${id}">Open</button>`;
+ return `<button class="get" data-act="get" data-id="${id}" ${v?`data-v="${esc(v.n)}"`:""}>Get</button>`}
+function status(a){const i=inst(a);return i?(upd(a)?`<span class="up">Update ${esc(a.tag)}</span> · installed ${esc(i.version)}`:`<span class="in">Installed</span> · ${esc(i.version)}`):`${esc(a.tag)} · ${mb(best(a).s)} · ${esc(a.date)}`}
+function row(a){const d=DL[a.id];return `<div class="row" data-id="${esc(a.id)}" tabindex="0">${tile(a)}<div class="grow"><div class="nm">${esc(a.name)}</div><div class="ds">${esc(a.desc)}</div><div class="mt">${status(a)}</div>${d&&d.st=="dl"?`<div class="bar"><i style="width:${Math.round(d.p*100)}%"></i></div>`:""}</div>${btn(a,best(a))}</div>`}
+function paint(){const q=$("#q").value.toLowerCase(),cs=["All",...new Set(APPS.map(a=>a.cat))];
+ $("#chips").innerHTML=cs.map(c=>`<button class="chip" aria-pressed="${c==cat}" data-c="${c}">${c}</button>`).join("");
+ const L=APPS.filter(a=>(cat=="All"||a.cat==cat)&&(a.name+a.desc).toLowerCase().includes(q));
+ $("#list").innerHTML=L.length?L.map(row).join(""):'<p class="empty">No apps match that search.</p>';
+ const U=APPS.filter(upd),I=APPS.filter(a=>inst(a)&&!upd(a));$("#bd").hidden=!U.length;$("#bd").textContent=U.length;
+ $("#v-lib").innerHTML=!P?'<p class="empty">Installed apps and updates appear here in the Android app.</p>':`<button class="get alt" data-act="check" style="width:100%;margin-top:6px">Check for updates</button>${U.length?`<h2>Updates</h2>${U.map(row).join("")}`:""}<h2>Installed</h2>${I.length?I.map(row).join(""):'<p class="empty">None of the apps in Parcel are installed yet.</p>'}`;
+ banner();if(openId)sheet(openId)}
+function banner(){const el=$("#selfup");if(!SELFUP){el.hidden=true;return}const d=DL[SELF.id],id=esc(SELF.id);el.hidden=false;el.dataset.id=SELF.id;
+ el.innerHTML=`<div class="grow"><div class="nm">Parcel ${esc(SELFUP)} is available</div><div class="mt">You have ${esc(SELFVER)}.</div>${d&&d.st=="dl"?`<div class="bar"><i style="width:${Math.round(d.p*100)}%"></i></div>`:""}</div>`+(d&&d.st=="dl"?`<button class="get alt" data-act="cancel">${Math.round(d.p*100)}% ✕</button>`:d&&d.st=="ready"?`<button class="get" data-act="install" data-id="${id}">Install</button>`:`<button class="get" data-act="get" data-id="${id}">Update</button>`)}
+async function selfCheck(){if(!P||!HAS_REPO)return;try{const me=(await P.getInstalled({packages:[SELF.pkg]})).apps[SELF.pkg];if(!me)return;
+ const r=await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);if(!r.ok)return;const j=await r.json();
+ const ap=j.assets.filter(s=>/\.apk$/i.test(s.name)).map(s=>({n:s.name,s:s.size,u:s.browser_download_url}));
+ if(ap.length&&cmp(nums(j.tag_name),nums(me.version))>0){SELF.apks=ap;SELF.tag=j.tag_name;SELFUP=j.tag_name.replace(/^v/,"");SELFVER=me.version;paint()}}catch(e){}}
+const loadCatalog=async()=>{if(HAS_REPO){try{const r=await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/www/apps.json`,{cache:"no-cache"});if(r.ok){const j=await r.json();if(Array.isArray(j)&&j.length)return j}}catch(e){}}return (await fetch("apps.json")).json()};
+function prog(id){const w=Math.round(DL[id].p*100);document.querySelectorAll(`[data-id="${CSS.escape(id)}"] .bar i`).forEach(i=>i.style.width=w+"%");document.querySelectorAll("[data-act=cancel]").forEach(b=>b.textContent=(w>0?w+"%":"…")+" ✕")}
+function sheet(id){const a=APPS.find(x=>x.id==id),b=best(a),d=DL[id];
+ $("#pane").innerHTML=`<button class="x" aria-label="Close">×</button><div style="display:flex;gap:14px;align-items:center">${tile(a)}<div><div class="nm" style="font-size:20px">${esc(a.name)}</div><div class="mt">${status(a)}</div></div></div><p>${esc(a.desc)}</p><p class="mt">Source: ${esc(a.id)} · released ${esc(a.date)}${a.pkg?" · "+esc(a.pkg):""}</p>
+ ${d&&d.st=="dl"?`<div class="bar"><i style="width:${Math.round(d.p*100)}%"></i></div>`:""}
+ ${a.apks.map(v=>`<div class="var"><div class="fn">${esc(v.n)}<div class="mt">${mb(v.s)} ${v===b?'<span class="best">· recommended</span>':""}</div></div>${btn(a,v)}</div>`).join("")}`;
+ if(!$("#sheet").classList.contains("on"))history.pushState({s:1},"");$("#pane").dataset.id=id;openId=id;$("#sheet").classList.add("on")}
+const close=()=>{if(openId){openId=null;$("#sheet").classList.remove("on");if(history.state&&history.state.s)history.back()}};
+addEventListener("popstate",()=>{if(openId){openId=null;$("#sheet").classList.remove("on")}});
+async function get(a,v){
+ if(!P)return window.open(v.u,"_blank");
+ if(busy)return toast("One download at a time. Cancel or wait for the current one.");
+ busy=a.id;DL[a.id]={st:"dl",p:0};paint();
+ try{const r=await P.download({url:v.u,name:v.n,id:a.id,size:v.s});DL[a.id]={st:"ready",path:r.path};busy=null;paint();await install(a)}
+ catch(e){busy=null;delete DL[a.id];paint();if(!/cancel/i.test(e.message||""))toast("Download failed: "+(e.message||"network error"))}}
+async function install(a){const d=DL[a.id];if(!d)return;try{const r=await P.install({path:d.path});if(r.needsPermission)toast("Allow installs from Parcel, then come back and tap Install.")}catch(e){toast("Could not open installer: "+e.message)}}
+async function refreshInstalled(){if(!P)return;try{const r=await P.getInstalled({packages:APPS.map(a=>a.pkg).filter(Boolean)});INST=r.apps||{};for(const a of APPS)if(inst(a)&&DL[a.id]&&DL[a.id].st=="ready")delete DL[a.id];paint();if(!busy&&!Object.keys(DL).length)P.clean().catch(()=>{})}catch(e){}}
+async function live(a){const r=await fetch(`https://api.github.com/repos/${a.id}/releases/latest`);if(r.status==403||r.status==429)throw new Error("rate");if(!r.ok)return;const j=await r.json();
+ const ap=j.assets.filter(s=>/\.apk$/i.test(s.name)).map(s=>({n:s.name,s:s.size,u:s.browser_download_url}));if(ap.length)Object.assign(a,{tag:j.tag_name,date:j.published_at.slice(0,10),apks:ap})}
+async function check(){toast("Checking for updates…");try{for(const a of APPS.filter(inst))await live(a);paint();toast(APPS.filter(upd).length?"Updates found.":"Everything is up to date.")}catch(e){toast(e.message=="rate"?"GitHub rate limit reached. Try again in a few minutes.":"Could not reach GitHub.")}}
+document.addEventListener("click",e=>{const t=e.target,b=t.closest("[data-act]");
+ if(t.closest("nav button")){tabNow=t.closest("nav button").dataset.t;document.querySelectorAll("nav button").forEach(x=>x.setAttribute("aria-selected",x.dataset.t==tabNow));$("#v-browse").hidden=tabNow!="browse";$("#v-lib").hidden=tabNow!="lib";return}
+ if(t.dataset.c){cat=t.dataset.c;return paint()}
+ if(b){e.stopPropagation();const a=b.dataset.id==SELF.id?SELF:APPS.find(x=>x.id==b.dataset.id),k=b.dataset.act;
+  if(k=="get")return get(a,a.apks.find(v=>v.n==b.dataset.v)||best(a));
+  if(k=="install")return install(a);if(k=="cancel")return P.cancel();if(k=="check")return check();
+  if(k=="open")return P.launch({package:a.pkg}).catch(()=>toast("Could not open the app."));}
+ if(t.classList.contains("x")||t.id=="sheet")return close();
+ const r=t.closest(".row");if(r)sheet(r.dataset.id)});
+document.addEventListener("keydown",e=>{if(e.key=="Escape")close();if(e.key=="Enter"&&e.target.classList.contains("row"))sheet(e.target.dataset.id)});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshInstalled()});
+$("#q").addEventListener("input",paint);
+if(P)P.deviceInfo().then(r=>{if(r.abis&&r.abis.length){ABIS=r.abis;paint()}}).catch(()=>{});
+if(P)P.addListener("progress",p=>{const d=DL[p.id];if(d&&d.st=="dl"){d.p=p.total>0?Math.min(1,p.loaded/p.total):0;prog(p.id)}});
+loadCatalog().then(async j=>{APPS=j;paint();await refreshInstalled();selfCheck();if(!P)$("#sub").textContent="Open-source apps, straight from the developers. Install the Android app for one-tap installs."}).catch(()=>toast("Could not load the catalog."));
+</script></body></html>
