@@ -18,3 +18,11 @@ No backend, no storage of our own, no data collected. The app downloads APKs fro
 
 ## Add apps
 Add the repo to `scrape.py` (or an entry in `www/apps.json` with its Android `pkg`) and push; the daily job keeps it current.
+
+## Sections and files
+- **Phone / TV:** APKs install natively with progress and the system installer.
+- **PC:** installers (Windows, macOS, Linux) download to the phone's `Download/Parcel` folder so you can copy them to a computer.
+- Settings → **Test connection** shows which GitHub services the current network can reach.
+
+## If downloads fail
+Parcel tries GitHub's normal address, then alternate addresses, then GitHub's official API route. If all fail, the network is blocking GitHub: try mobile data, a VPN (for example Cloudflare WARP), or set Android Private DNS to `one.one.one.one`.
